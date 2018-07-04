@@ -13,9 +13,9 @@ missing module named vms_lib - imported by platform, F:\JUN\project\Python\pyexe
 missing module named termios - imported by tty, F:\JUN\project\Python\pyexe\shipmap.py, getpass
 missing module named urllib.unquote - imported by urllib, redis._compat
 missing module named grp - imported by shutil, tarfile, F:\JUN\project\Python\pyexe\shipmap.py
-missing module named 'org.python' - imported by copy, F:\JUN\project\Python\pyexe\shipmap.py, xml.sax
 missing module named pwd - imported by posixpath, shutil, tarfile, http.server, webbrowser, F:\JUN\project\Python\pyexe\shipmap.py, netrc, getpass
 missing module named _dummy_threading - imported by dummy_threading, F:\JUN\project\Python\pyexe\shipmap.py
+missing module named 'org.python' - imported by copy, F:\JUN\project\Python\pyexe\shipmap.py, xml.sax
 missing module named StringIO - imported by redis._compat
 missing module named cStringIO - imported by redis._compat
 missing module named copy_reg - imported by cStringIO
