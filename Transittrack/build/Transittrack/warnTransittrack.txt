@@ -1,0 +1,24 @@
+missing module named resource - imported by posix, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named posix - imported by os, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named _posixsubprocess - imported by subprocess, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named 'org.python' - imported by pickle, F:\JUN\project\Python\map\Transittrack\Transittrack.py, xml.sax
+missing module named readline - imported by cmd, code, pdb, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+excluded module named _frozen_importlib - imported by importlib, importlib.abc, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named _frozen_importlib_external - imported by importlib._bootstrap, importlib, importlib.abc, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named _winreg - imported by platform, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named _scproxy - imported by urllib.request
+missing module named java - imported by platform, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named 'java.lang' - imported by platform, F:\JUN\project\Python\map\Transittrack\Transittrack.py, xml.sax._exceptions
+missing module named vms_lib - imported by platform, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named termios - imported by tty, F:\JUN\project\Python\map\Transittrack\Transittrack.py, getpass
+missing module named urllib.unquote - imported by urllib, redis._compat
+missing module named grp - imported by shutil, tarfile, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named pwd - imported by posixpath, shutil, tarfile, http.server, webbrowser, F:\JUN\project\Python\map\Transittrack\Transittrack.py, netrc, getpass
+missing module named _dummy_threading - imported by dummy_threading, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named org - imported by copy, F:\JUN\project\Python\map\Transittrack\Transittrack.py
+missing module named StringIO - imported by redis._compat
+missing module named cStringIO - imported by redis._compat
+missing module named copy_reg - imported by cStringIO
+missing module named Queue - imported by redis._compat
+missing module named urlparse - imported by redis._compat
+missing module named hiredis - imported by redis.utils, redis.connection
