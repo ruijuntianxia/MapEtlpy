@@ -20,7 +20,7 @@ import redis
 import json
 import collections
 
-def ShipMaplistZJ(typename):
+def ShipMaplistZJ(typename,orderno,conn):
     try:
         '''
         @此为订单对应运输轨迹详情 对应轨迹地图
@@ -29,25 +29,28 @@ def ShipMaplistZJ(typename):
         #dsn=cx_Oracle.makedsn('120.77.205.81','1521','orcl')
         #conn=cx_Oracle.connect('SCMP','ZhwlScMp2018',dsn)
         #用自己的实际数据库用户名、密码、主机ip地址 替换即可
-        #conn = cx_Oracle.connect('SCMP/ZhwlScMp2018@120.77.205.81:1521/orcl')   
+        conn = cx_Oracle.connect('SCMP/ZhwlScMp2018@120.77.205.81:1521/orcl')   
         #conn = cx_Oracle.connect('SCMP/scmp123456@192.168.1.193:1521/orcl')   
 
         
-        conn = cx_Oracle.connect('SCMP/ZhwlScMp2018@120.77.205.81:1521/orcl')   
-       
-        print(conn)
+        #conn = cx_Oracle.connect('SCMP/ZhwlScMp2018@120.77.205.81:1521/orcl')   
+        
         curs=conn.cursor()
+        
 
         #声明变量
         #typename = ''#320' #plsql入参
         msg = curs.var(cx_Oracle.CURSOR) #plsql出参
         cunm = curs.var(cx_Oracle.CURSOR) #plsql出参
         #调用存储过程
-        curs.callproc('PACK_OP.PRO_ShipMapLisZJ', [typename, msg,cunm]) #['Nick', 'Nick, Good Morning!']
+        curs.callproc('PACK_OP.PRO_ShipMapLisZJ', [typename,orderno, msg,cunm]) #['Nick', 'Nick, Good Morning!']
         #nds=msg.getvalue().fetchall()
         #rows=curs.fetchone()单个元组
         #游标先获取值在fetcall 
         rows=msg.getvalue().fetchall()
+        if len(rows)==0:
+            print(orderno+":ZJ订单没有轨迹")
+            return
         print(type(rows))
         curs.close()
         conn.close()
@@ -64,7 +67,7 @@ def ShipMaplistZJ(typename):
         
         # 手动整理坐标点汇总
         objects_list = [] 
-        numid=0
+        count=0
         for ro in rows:
             
             # 已经有数据
@@ -73,12 +76,12 @@ def ShipMaplistZJ(typename):
                 if str(ro[0])=="None" or str(objects_list[0])=="None" :
                     continue
                 if objects_list[0]==ro[0] and objects_list[2]==ro[2]:
-                    
+                    count+=1
                     objects_list[6]+=','+'{ \'name\':\''+str(ro[8])+'【'+str(ro[9]).encode('utf8').decode('utf-8')+'】\',\'lnglat\':'+str(ro[7])+'}'
                     #print(objects_list[6])
                 else:
                     # 不是一个运单则插入redis，同时重新给objects_list赋值
-                    numid+=1
+                    
                     keyname=str(objects_list[0])+ str(objects_list[2])
                     keyvalue=r.lrange(keyname,0,1)
                     if len(keyvalue)==1:
@@ -96,7 +99,8 @@ def ShipMaplistZJ(typename):
                             "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
                             "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
                             "path" :objects_list[6],\
-                            "status":'zj' }
+                            "status":'zj',\
+                        "count": count }
 
                             r.lpush(keyname,dic)  
                             #message=str(numid)
@@ -113,7 +117,8 @@ def ShipMaplistZJ(typename):
                         "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
                         "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
                         "path" :objects_list[6],\
-                        "status":'zj' }
+                        "status":'zj',\
+                        "count": count }
 
                         r.lpush(keyname,dic)  
                         #message=str(numid)
@@ -123,6 +128,7 @@ def ShipMaplistZJ(typename):
 
             else:
                 #第一次进入
+                count=1
                 objects_list.append(ro[0])
                 objects_list.append(ro[1])
                 objects_list.append(ro[2])
@@ -137,7 +143,7 @@ def ShipMaplistZJ(typename):
             print("已存在")
             pass
         else:
-            numid+=1
+            
             countnum+=1
             keyname=str(objects_list[0])+ str(objects_list[2])
             r.ltrim(keyname,1,0)
@@ -148,7 +154,8 @@ def ShipMaplistZJ(typename):
             "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
             "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
             "PATH" : '['+str(objects_list[6])+']',\
-            "status":'zj'  }
+            "status":'zj',\
+            "count": count  }
             r.lpush(keyname,dic)  
             #message=str(numid)
             #log.logCommon(r,"insertship",message)

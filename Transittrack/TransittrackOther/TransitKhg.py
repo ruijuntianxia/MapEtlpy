@@ -20,7 +20,7 @@ import redis
 import json
 import collections
 
-def ShipMaplist(typename):
+def ShipMaplist(typename,orderno,conn):
     try:
         '''
         @此为订单对应运输轨迹详情 对应轨迹地图
@@ -34,18 +34,26 @@ def ShipMaplist(typename):
         conn = cx_Oracle.connect('SCMP/ZhwlScMp2018@120.77.205.81:1521/orcl')   
         #conn = cx_Oracle.connect('SCMP/scmp123456@192.168.1.193:1521/orcl')   
         print(conn)
+        
         curs=conn.cursor()
+        
+        
+        
 
         #声明变量
         #typename = '324'#320' #plsql入参
+        #orderno='YPSYB01000000011500'
         msg = curs.var(cx_Oracle.CURSOR) #plsql出参
         cunm = curs.var(cx_Oracle.CURSOR) #plsql出参
         #调用存储过程
-        curs.callproc('PACK_OP.PRO_ShipMapLis', [typename, msg,cunm]) #['Nick', 'Nick, Good Morning!']
+        curs.callproc('PACK_OP.PRO_ShipMapLis', [typename,orderno, msg,cunm]) #['Nick', 'Nick, Good Morning!']
         #nds=msg.getvalue().fetchall()
         #rows=curs.fetchone()单个元组
         #游标先获取值在fetcall 
         rows=msg.getvalue().fetchall()
+        if len(rows)==0:
+            print(orderno+":KHG订单没有轨迹")
+            return
         countrows=cunm.getvalue().fetchall()
         curs.close()
         conn.close()
@@ -67,20 +75,21 @@ def ShipMaplist(typename):
 
         # 手动整理坐标点汇总
         objects_list = [] 
-        numid=0
+        count=0
         for ro in rows:
+            
             # 已经有数据
             if  len(objects_list)>0:
+                
                 # 是否是同一个运单
                 if str(ro[0])=="None" or str(objects_list[0])=="None" :
                     continue
                 if objects_list[0]==ro[0] and objects_list[2]==ro[2]:
-                    
+                    count+=1
                     objects_list[6]+=','+'{ \'name\':\''+str(ro[8])+'【'+str(ro[9]).encode('utf8').decode('utf-8')+'】\',\'lnglat\':'+str(ro[7])+'}'
                     #print(objects_list[6])
                 else:
                     # 不是一个运单则插入redis，同时重新给objects_list赋值
-                    numid+=1
                     keyname=str(objects_list[0])+ str(objects_list[2])
                     keyvalue=r.lrange(keyname,0,1)
 
@@ -99,11 +108,13 @@ def ShipMaplist(typename):
                             "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
                             "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
                             "path" :objects_list[6],\
-                            "status":'zj' }
+                            "status":'khg',\
+                            "count": count }
                             r.lpush(keyname,dic)  
                             #message=str(numid)
                             #log.logCommon(r,"insertship",message)
                             print(keyname)
+                            
                     else:
                         countnum+=1
                         #length=len(r.lrange(keyname,0,1)) #判断是否已经存在轨迹
@@ -116,15 +127,20 @@ def ShipMaplist(typename):
                         "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
                         "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
                         "path" :objects_list[6],\
-                        "status":'khg'}
+                        "status":'khg',\
+                        "count": count }
                         r.lpush(keyname,dic)  
                         #message=str(numid)
                         #log.logCommon(r,"insertship",message)
-                        print(keyname) 
-                    objects_list = []
+                        print(keyname)
+
+                    objects_list = []   
+                    
 
             else:
                 #第一次进入
+                print(ro[2])
+                count=1
                 objects_list.append(ro[0])
                 objects_list.append(ro[1])
                 objects_list.append(ro[2])
@@ -133,7 +149,7 @@ def ShipMaplist(typename):
                 objects_list.append(ro[6])
                 objects_list.append('{ \'name\':\''+str(ro[8])+'【'+str(ro[9]).encode('utf8').decode('utf-8')+'】\',\'lnglat\':'+str(ro[7])+'}')
 
-        numid+=1
+       
         keyname=str(ro[0])+ str(ro[2])
         keyvalue=r.lrange(keyname,0,1)
         if len(keyvalue)>0:
@@ -150,7 +166,8 @@ def ShipMaplist(typename):
             "STARTDATE" : str(objects_list[4]).encode('utf8').decode('utf-8'),\
             "OTS_RETURN_DATE" :str(objects_list[5]).encode('utf8').decode('utf-8'),\
             "PATH" : '['+str(objects_list[6])+']',\
-            "status":'khg'
+            "status":'khg',\
+            "count": count
             }
             r.lpush(keyname,dic)  
             #message=str(numid)
